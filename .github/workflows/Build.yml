@@ -21,7 +21,7 @@ env:
   UPLOAD_OUTPUT: true
 
 jobs:
-   _360t7:
+   openwrt:
     runs-on: ubuntu-20.04
     permissions:
       contents: write
