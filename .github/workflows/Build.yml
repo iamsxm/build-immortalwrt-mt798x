@@ -15,7 +15,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   TZ: Asia/Shanghai
-  DEVICE: 360t7
+  DEVICE: Xiaomi Redmi Router AX6000
   UPLOAD_OUTPUT: true
 
 jobs:
@@ -65,7 +65,7 @@ jobs:
     - name: 修改 Lan IP
       run: |
         cd openwrt
-        sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
+        sed -i 's/192.168.1.1/192.168.31.1/g' package/base-files/files/bin/config_generate
         neofetch
 
     - name: 下载依赖
