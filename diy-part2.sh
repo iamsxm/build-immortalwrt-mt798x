@@ -13,6 +13,9 @@
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.5.1/g' package/base-files/files/bin/config_generate
 
+#删除默认登陆密码
+sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-default-settings
+
 # Modify hostname
 sed -i 's/ImmortalWrt/rax3000m_256m/g' package/base-files/files/bin/config_generate
 
