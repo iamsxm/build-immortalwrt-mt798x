@@ -74,8 +74,8 @@ CONFIG_TARGET_mediatek_mt7986=y
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_mt7986b-ax6000-2500wan-sd-rfb is not set
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_mediatek_mt7986-fpga is not set
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_mediatek_mt7986-fpga-ubi is not set
-# CONFIG_TARGET_mediatek_mt7986_DEVICE_xiaomi_redmi-router-ax6000 is not set
-CONFIG_TARGET_mediatek_mt7986_DEVICE_xiaomi_redmi-router-ax6000-stock=y
+CONFIG_TARGET_mediatek_mt7986_DEVICE_xiaomi_redmi-router-ax6000=y
+# CONFIG_TARGET_mediatek_mt7986_DEVICE_xiaomi_redmi-router-ax6000-stock is not set
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_ruijie-rg-x60-pro-uboot is not set
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_ruijie-rg-x60-pro is not set
 # CONFIG_TARGET_mediatek_mt7986_DEVICE_BPI-R3MINI-NAND is not set
@@ -92,7 +92,7 @@ CONFIG_HAS_SUBTARGETS=y
 CONFIG_HAS_DEVICES=y
 CONFIG_TARGET_BOARD="mediatek"
 CONFIG_TARGET_SUBTARGET="mt7986"
-CONFIG_TARGET_PROFILE="DEVICE_xiaomi_redmi-router-ax6000-stock"
+CONFIG_TARGET_PROFILE="DEVICE_xiaomi_redmi-router-ax6000"
 CONFIG_TARGET_ARCH_PACKAGES="aarch64_cortex-a53"
 CONFIG_DEFAULT_TARGET_OPTIMIZATION="-Os -pipe -mcpu=cortex-a53"
 CONFIG_CPU_TYPE="cortex-a53"
