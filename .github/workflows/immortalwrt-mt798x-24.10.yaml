@@ -1,4 +1,4 @@
-name: Build
+name: Build immortalwrt-mt798x-24.10
 
 on:
   repository_dispatch:
