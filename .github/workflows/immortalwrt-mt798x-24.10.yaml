@@ -1,0 +1,159 @@
+name: Build
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+        
+env:
+  REPO_URL: https://github.com/padavanonly/immortalwrt-mt798x-24.10
+  REPO_BRANCH: 2410
+  FEEDS_CONF: feeds.conf.default
+  CONFIG_FILE: config20250328
+  DIY_P1_SH: diy-part1.sh
+  DIY_P2_SH: diy-part2.sh
+  TZ: Asia/Shanghai
+  DEVICE: Xiaomi-Redmi-Router-AX6000
+  UPLOAD_OUTPUT: true
+
+jobs:
+   openwrt:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+    - name: 配置
+      uses: actions/checkout@master
+      
+    - name: 检查服务器配置
+      if: (!cancelled())
+      run: |
+        echo "警告⚠"
+        echo "若分配的服务器性能不足，务必及时取消，重新运行！"
+        echo "已知编译成功CPU型号：8370C,8171M"
+        echo "已知性能不足CPU型号：8272CL,E5系列"
+        echo "--------------------------CPU信息--------------------------"
+        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo "--------------------------内存信息--------------------------"
+        echo "已安装内存详细信息："
+        sudo lshw -short -C memory | grep GiB
+        echo -e "\n"
+        echo "--------------------------硬盘信息--------------------------"
+        echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
+        echo "硬盘详情："
+        df -Th
+    
+    - name: 配置环境
+      env:
+          DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+        sudo -E apt-get -qq update
+        sudo docker image prune --all --force
+        sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /mnt/workdir
+        sudo chown $USER:$GROUPS /mnt/workdir
+
+    - name: 克隆源码
+      working-directory: /mnt/workdir
+      run: |
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        
+    - name: 加载自定义源
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY_P1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P1_SH
+
+    - name: 更新 feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
+
+    - name: 安装 feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds install -a
+        
+    - name: Load custom configuration
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $DIY_P2_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY_P2_SH
+
+    # - name: 配置 Feeds
+    #   run: |
+    #     cp -f $GITHUB_WORKSPACE/.config $GITHUB_WORKSPACE/openwrt/
+    #     cd openwrt
+    #     # echo "src-git kenzo https://github.com/kenzok8/openwrt-packages" >> ./feeds.conf.default
+    #     # echo "src-git small https://github.com/kenzok8/small" >> ./feeds.conf.default
+    #     ./scripts/feeds update -a
+    #     ./scripts/feeds install -a
+    #     cp -f $GITHUB_WORKSPACE/.config $GITHUB_WORKSPACE/openwrt/
+    #     ./scripts/feeds install -a
+
+    # - name: 修改 Lan IP
+    #   run: |
+    #     cd openwrt
+    #     sed -i 's/192.168.1.1/192.168.31.1/g' package/base-files/files/bin/config_generate
+    #     neofetch
+    
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+    - name: 下载依赖
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: 编译固件
+      run: |
+        cd openwrt
+        make -j$(nproc)
+        echo "FILE_DATE=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+
+    - name : 上传输出文件
+      uses: actions/upload-artifact@master
+      if: env.UPLOAD_OUTPUT == 'true' && !cancelled()
+      with:
+        name: ${{ env.DEVICE }}--${{ env.FILE_DATE }}
+        path: openwrt/bin
+        
+    - name: 整理输出文件
+      run: |
+        mv openwrt/.config openwrt/bin
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+    
+    - name: 发布固件至 Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: "${{ env.DEVICE }}--${{ env.FILE_DATE }}"
+        artifacts: "openwrt/bin/targets/*/*/*"
+        body: |
+          # 未测试×
+          
+          IP: 192.168.31.1 | Password: none
