@@ -16,7 +16,8 @@
 # Add a feed source
 echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> ./feeds.conf.default
 echo "src-git lucky https://github.com/gdy666/luci-app-lucky.git" >> ./feeds.conf.default
-echo "src-git kenzo https://github.com/kenzok8/openwrt-packages" >> ./feeds.conf.default
+echo "src-git easytier https://github.com/EasyTier/luci-app-easytier" >> ./feeds.conf.default
+git clone https://github.com/EasyTier/luci-app-easytier.git /opt/luci-app-easytier
 #echo "src-git small https://github.com/kenzok8/small" >> ./feeds.conf.default
 #echo "src-git OpenClash https://github.com/vernesong/OpenClash.git" >> ./feeds.conf.default
 
