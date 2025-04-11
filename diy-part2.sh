@@ -20,7 +20,7 @@ sed -i "/CYXluq4wUazHjmCDBCqXF/d" package/lean/default-settings/files/zzz-defaul
 #sed -i 's/ImmortalWrt/rax3000m_256m/g' package/base-files/files/bin/config_generate
 
 #修改wifi名称（mtwifi-cfg）
-sed -i 's/ImmortalWrt-2.4G/su_2.4G/g' package/mtk/applications/mtwifi-cfg/files/mtwifi.sh
+sed -i 's/ImmortalWrt-2.4G/su/g' package/mtk/applications/mtwifi-cfg/files/mtwifi.sh
 sed -i 's/ImmortalWrt-5G/su_5G/g' package/mtk/applications/mtwifi-cfg/files/mtwifi.sh
 
 #修改闪存为256M版本(这是针对原厂128闪存来的，但又要编译256M固件来的）
